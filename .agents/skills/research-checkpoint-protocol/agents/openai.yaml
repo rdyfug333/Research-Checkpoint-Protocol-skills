@@ -1,0 +1,4 @@
+interface:
+  display_name: "Research Checkpoint Protocol v1.0"
+  short_description: "Persist research state across Codex sessions"
+  default_prompt: "Use $research-checkpoint-protocol to initialize, checkpoint, hand off, or resume a research project."

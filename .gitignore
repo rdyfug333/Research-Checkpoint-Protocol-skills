@@ -1,0 +1,22 @@
+# Research data and generated experiment artifacts
+/data/
+/datasets/
+/checkpoints/
+/outputs/
+/runs/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+
+# Local environments and caches
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+.cache/
+
+# Local secrets
+.env
+.env.*
+!.env.example
