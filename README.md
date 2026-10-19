@@ -1,42 +1,94 @@
-# Research Checkpoint Protocol v1.0
+# Research Checkpoint Protocol (RCP)
 
-Research Checkpoint Protocol（RCP）帮助长期科研项目在上下文压缩、对话中断和环境切换后恢复可信状态。核心分工是：对话用于讨论与执行，Markdown 保存长期状态，Git 记录版本，实验日志和结果文件提供科学证据。
+Research Checkpoint Protocol v1.0 is a lightweight Codex Skill for preserving verifiable scientific experiment state across milestones, context compaction, and sessions. It does not run experiments or replace experiment evidence.
 
-## 四种模式
+Long research projects can outlive a conversation or a computer session. RCP keeps the decisions, progress, and recovery entry point in files that can be inspected again.
 
-- **Initialize**：检查项目已有规则和状态；缺少时创建核心文档，已有内容则保留并非破坏性补充。
-- **Checkpoint**：核验代码、数据划分、配置、日志、Checkpoint 和指标后，记录一个有效研究里程碑。
-- **Handoff**：生成精简的 `docs/SESSION_HANDOFF.md`，记下当前任务、可靠检查点和准确下一步。
-- **Resume**：按恢复顺序读取状态文档，核对 Git 和实验文件，再从最后一个可靠检查点继续。
+RCP separates four responsibilities: conversation for discussion and execution, Markdown for durable state, Git for version history, and experiment logs/results for scientific evidence. The Skill itself is in [`.agents/skills/research-checkpoint-protocol/`](.agents/skills/research-checkpoint-protocol/), not at the repository root.
 
-## 状态文档
+## Modes
 
-`AGENTS.md` 保存低频项目规则和完整恢复流程；`docs/PROJECT_STATE.md` 保存当前阶段、实验状态、结果和下一步；`docs/DECISIONS.md` 保存重要决策及其历史。`docs/SESSION_HANDOFF.md` 是短期恢复快照，不能替代前三份长期记录。
+| Mode | Purpose |
+|---|---|
+| Initialize | Create missing project state files and preserve existing `AGENTS.md` rules. |
+| Checkpoint | Verify a meaningful milestone against real code, configuration, logs, metrics, and artifacts before recording its status. |
+| Handoff | Write a short `docs/SESSION_HANDOFF.md` with the last reliable checkpoint and the next action. |
+| Resume | Read durable state, verify Git and experiment files, then continue within the current authorization. |
 
-状态使用 `Planned`、`In Progress`、`PASS`、`PARTIAL`、`FAILED`、`BLOCKED` 或 `Needs Verification`。缺少可检查证据时，不得写 `PASS`。
+## Repository layout
 
-## 安装
+```text
+.agents/skills/research-checkpoint-protocol/
+├── SKILL.md
+├── agents/openai.yaml
+├── references/protocol.md
+└── assets/templates/
+    ├── AGENTS.md
+    ├── PROJECT_STATE.md
+    ├── DECISIONS.md
+    └── SESSION_HANDOFF.md
+VALIDATION_REPORT.md
+LICENSE
+CONTRIBUTING.md
+RELEASE_NOTES.md
+```
 
-将仓库内 `.agents/skills/research-checkpoint-protocol` 目录复制到用户级 `.agents/skills/`，保持目录名 `research-checkpoint-protocol`。Codex 通常从用户级 `.agents/skills` 和项目级 `.agents/skills` 发现 Skills。也可在项目中直接使用本仓库提供的 Skill 源码。更新时从本仓库维护版本重新复制；不要在多个科研项目中维护副本。
+The first three templates are long-term project documents. `SESSION_HANDOFF.md` is generated only for a real Handoff and is a short-lived snapshot.
 
-显式调用：`$research-checkpoint-protocol`。也可以用自然语言提出 Initialize、Checkpoint、Handoff 或 Resume。
+## Install on Windows
 
-## 常见流程
+Run this in PowerShell from a directory where you want the checkout. Cloning a private copy requires repository access; a public copy can be cloned anonymously.
 
-新项目初始化：在目标科研项目中调用 Skill 并请求 Initialize。它先检查现有 `AGENTS.md`、文档和 Git 状态，再创建缺少的状态文件；不会覆盖已有 `AGENTS.md`，也不会为模板填入虚构结果。
+```powershell
+git clone --branch v1.0.1 --depth 1 https://github.com/rdyfug333/Research-Checkpoint-Protocol-skills.git
+if ($LASTEXITCODE -ne 0) { throw 'Git clone failed.' }
+$source = Join-Path (Resolve-Path '.\Research-Checkpoint-Protocol-skills').Path '.agents\skills\research-checkpoint-protocol'
+$skillsRoot = Join-Path $env:USERPROFILE '.agents\skills'
+$target = Join-Path $skillsRoot 'research-checkpoint-protocol'
+if (Test-Path -LiteralPath $target) { throw "Skill already exists: $target. Compare versions before replacing it." }
+New-Item -ItemType Directory -Path $skillsRoot -Force | Out-Null
+Copy-Item -LiteralPath $source -Destination $skillsRoot -Recurse
+```
 
-完成关键实验后请求 Checkpoint，并给出验收标准。Skill 会核对真实日志、配置、代码版本和结果文件；证据不足时记录 `Needs Verification` 等状态。正式验收通过后，只有目标仓库和分支已授权且拟提交文件经过检查，才进行 Git Commit + Push。
+Alternatively, ask Codex to install the exact Skill subdirectory with its built-in Skill Installer:
 
-开始新对话或恢复中断工作时请求 Resume。Skill 先读取规则、项目状态、决策和最新 Handoff（如存在），再核验分支、HEAD、工作区、远程状态和所需实验文件。
+```text
+$skill-installer https://github.com/rdyfug333/Research-Checkpoint-Protocol-skills/tree/v1.0.1/.agents/skills/research-checkpoint-protocol
+```
 
-## Git 同步安全
+The built-in installer normally uses `$CODEX_HOME/skills` (typically `~/.codex/skills`); the PowerShell example uses the user-level `.agents/skills` location. Both are local Skill locations. If the Skill does not appear after installation, restart Codex.
 
-只暂存审查过的必要源码、配置和 Markdown；排除原始数据集、密钥、模型权重、虚拟环境和大型缓存。不使用 `git add .` 或 Force Push，不自动解决未知分支冲突或修改 Submodule。Push 后核对远程 Commit SHA。实验 `PASS` 与 `Git Sync: FAILED` 可以同时成立。
+## Quick start
 
-## Context Compaction 边界
+In a Codex chat opened for the target research project, use one of these prompts:
 
-Skill 规范保存和恢复动作，无法仅凭 `SKILL.md` 拦截所有自动 Context Compaction。里程碑 Checkpoint 是主要保障；在上下文使用率约 70%–80% 时主动 Handoff 只是建议范围，不是所有 Codex 版本的固定阈值。
+```text
+$research-checkpoint-protocol Initialize this project; preserve any existing AGENTS.md.
+$research-checkpoint-protocol Checkpoint the completed milestone using the actual logs, metrics, and configuration.
+$research-checkpoint-protocol Handoff the current task before changing sessions.
+$research-checkpoint-protocol Resume from the last reliable checkpoint and report any conflicts first.
+```
 
-## v1.0 验收
+Initialize creates or supplements `AGENTS.md`, `docs/PROJECT_STATE.md`, and `docs/DECISIONS.md`. Checkpoint never treats a plan or summary as experimental `PASS`. Frozen Decisions require an explicit, evidence-backed change. Git synchronization stages reviewed paths only, excludes secrets/data/weights/caches, never force pushes, and verifies the remote SHA. Experiment status and Git sync status are separate.
 
-Phase 0–3 的实际验收、Test A/B/C 证据与已知限制见 `VALIDATION_REPORT.md`。Test A 的 GICA 子模块工作区检查受权限限制，Test C4 是非盲测自检；科研实验结果与 Git 同步结果始终分别报告。
+RCP cannot intercept every automatic Context Compaction event. Milestone Checkpoints are the primary safeguard; a proactive Handoff near 70–80% context use is only a suggestion, not a fixed Codex threshold.
+
+## Validation and license
+
+[Validation report](VALIDATION_REPORT.md): Skill discovery, Initialize, Checkpoint, Handoff, conflict detection, and tested Git safety passed. Fresh-session Resume was **PARTIAL** because a third-party GICA submodule could not be fully inspected; one Frozen Decision safety check was also **PARTIAL** because it was non-blind. The report gives the evidence and remaining limits. No research data, model weights, or third-party source code are distributed here.
+
+RCP source and documentation are licensed under the [MIT License](LICENSE), copyright (c) 2026 rdyfug333. Referenced third-party projects and resources keep their own licenses; this license does not claim ownership of them.
+
+---
+
+## 中文说明
+
+RCP v1.0 是面向长期科研项目的 Codex Skill，用于在里程碑、上下文压缩和跨会话时保存可核验的研究状态。长期研究可能跨越多次对话或电脑环境，因此它把决策、进度和恢复入口写入可重新检查的文件。对话负责讨论与执行，Markdown 保存长期状态，Git 记录版本，实验日志和结果文件提供科学证据。Skill 本体位于 [`.agents/skills/research-checkpoint-protocol/`](.agents/skills/research-checkpoint-protocol/)。
+
+四种模式：**Initialize** 非破坏性建立项目规则与状态；**Checkpoint** 核验真实证据后记录里程碑；**Handoff** 生成简短的当前任务快照；**Resume** 读取持久化文件并核对 Git 与实验文件后继续。`AGENTS.md`、`docs/PROJECT_STATE.md`、`docs/DECISIONS.md` 是长期文档，`docs/SESSION_HANDOFF.md` 仅用于交接。
+
+上方 PowerShell 命令可安装固定版本 `v1.0.1`；也可在 Codex 中向 `$skill-installer` 提供上方的 GitHub Skill 子目录 URL。公开仓库可匿名克隆；私有仓库需要访问权限。安装后在科研项目对话中调用 `$research-checkpoint-protocol`，并明确提出 Initialize、Checkpoint、Handoff 或 Resume；上方 Quick start 给出了四个完整示例。例如：`$research-checkpoint-protocol Resume：先核对 Git、实验日志和最后可靠检查点，再报告冲突。`
+
+实验 `PASS` 必须有可检查证据；Frozen Decisions 不会因新摘要而静默改变。Git 只提交审查过的文件，不提交数据集、密钥或权重，也不使用 Force Push。Skill 无法保证捕获每次自动 Context Compaction；约 70%–80% 的主动 Handoff 只是建议范围。
+
+[验收报告](VALIDATION_REPORT.md)明确记录 Fresh-session Resume 和非盲测检查的 **PARTIAL** 限制。本仓库采用 [MIT License](LICENSE)，版权署名为 rdyfug333；提及的第三方项目及资源仍遵守各自许可证。

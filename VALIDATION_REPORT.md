@@ -1,5 +1,7 @@
 # Research Checkpoint Protocol v1.0 — Final Validation
 
+This report records v1.0 validation and the repository state at the time it was written. See `RELEASE_NOTES.md` for the later public packaging update.
+
 Date: 2026-10-19 (Asia/Shanghai)
 
 ## Objective and functions
@@ -37,7 +39,7 @@ Test C found one narrow documentation gap: the Git guidance did not explicitly d
 
 RCP's Markdown/Git persistence does **not** guarantee automatic capture of every Context Compaction event. PSS GICA submodule metadata has a third-party permission restriction, so full recursive status remains unverified. PSS datasets, weights and experiment CSVs are local-only and were not published with this Skill. A private repository may return 404 to an unauthorized connector; Git remote synchronization is the release authority.
 
-User-level installation: `C:/Users/86152/.agents/skills/research-checkpoint-protocol`. Source: `E:/Studyfile/CodexProjects/Research Checkpoint Protocol skill/.agents/skills/research-checkpoint-protocol`.
+User-level installation: `$HOME/.agents/skills/research-checkpoint-protocol`. Repository source: `.agents/skills/research-checkpoint-protocol`.
 
 ## Release record
 
