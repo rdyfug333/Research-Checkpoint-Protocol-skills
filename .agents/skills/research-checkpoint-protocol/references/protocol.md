@@ -59,4 +59,5 @@ This skill defines save and recovery practices; it does not register a backgroun
 - Stage paths explicitly. Exclude raw data, credentials, weights, virtual environments, and large generated caches. Keep locations and backup details for important untracked evidence in state documents.
 - Do not force push, rewrite shared history, modify submodules, or resolve unknown branch divergence automatically.
 - Verify the remote branch SHA after push. Report authentication or repository discovery failures without speculative URL changes or risky credential reconfiguration.
+- Classify Git sync failures from the observed command and error: sandbox/filesystem permission denial, DNS or network failure, authentication/authorization failure, or remote history divergence. Record the actual error and leave Git Sync as FAILED or BLOCKED until resolved. Do not infer repository absence from a private-repository 404 alone. Only a successful push followed by a matching remote branch SHA is Push Success.
 - A Git commit records files, not scientific validity. A scientific `PASS` records evidence, not remote synchronization.

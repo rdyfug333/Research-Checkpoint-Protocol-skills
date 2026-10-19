@@ -37,6 +37,6 @@ Research Checkpoint Protocol（RCP）帮助长期科研项目在上下文压缩�
 
 Skill 规范保存和恢复动作，无法仅凭 `SKILL.md` 拦截所有自动 Context Compaction。里程碑 Checkpoint 是主要保障；在上下文使用率约 70%–80% 时主动 Handoff 只是建议范围，不是所有 Codex 版本的固定阈值。
 
-## 后续阶段
+## v1.0 验收
 
-Phase 2 将在用户指定的真实科研项目（PSS-Reproduction）部署并核验状态协议。Phase 3 将单独进行跨对话恢复验收；本仓库 v1.0 交付不启动这两个阶段。
+Phase 0–3 的实际验收、Test A/B/C 证据与已知限制见 `VALIDATION_REPORT.md`。Test A 的 GICA 子模块工作区检查受权限限制，Test C4 是非盲测自检；科研实验结果与 Git 同步结果始终分别报告。
